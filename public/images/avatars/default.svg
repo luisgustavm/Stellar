@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Avatar padrao">
+  <defs>
+    <radialGradient id="bg" cx="32%" cy="22%" r="78%">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.28" stop-color="#67e8f9"/>
+      <stop offset="0.72" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#020617"/>
+    </radialGradient>
+  </defs>
+  <rect width="320" height="320" rx="160" fill="url(#bg)"/>
+  <circle cx="160" cy="133" r="52" fill="#e0f2fe"/>
+  <path fill="#e0f2fe" d="M77 260c12-49 43-78 83-78s71 29 83 78H77z"/>
+  <circle cx="72" cy="73" r="4" fill="#facc15"/>
+  <circle cx="249" cy="82" r="4" fill="#f8fafc"/>
+  <circle cx="260" cy="232" r="3" fill="#bae6fd"/>
+</svg>

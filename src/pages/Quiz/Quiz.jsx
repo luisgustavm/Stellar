@@ -1,10 +1,11 @@
 import { useContext, useMemo, useState } from "react";
-import { doc, runTransaction } from "firebase/firestore";
+import { doc, runTransaction, setDoc } from "firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 import { CoinsContext } from "../../context/CoinsContext";
 import { useToast } from "../../context/ToastContext";
 import { UserContext } from "../../context/UserContext";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import { unlockAchievement } from "../../data/achievements";
 import { difficultyLevels, quizData } from "../../data/quizData";
 import { db } from "../../services/firebase";
 import "./Quiz.css";
@@ -300,6 +301,38 @@ export default function Quiz() {
 
     setHistory(nextHistory);
     saveHistory(nextHistory);
+
+    if (user?.uid) {
+      const nextAchievements = {
+        ...unlockAchievement(user.uid, "first_quiz", { score: finalScore }),
+      };
+
+      if (finalScore === questions.length) {
+        Object.assign(
+          nextAchievements,
+          unlockAchievement(user.uid, "quiz_master", { difficulty, score: finalScore })
+        );
+      }
+
+      setUserData?.((current) => ({
+        ...current,
+        achievements: {
+          ...(current?.achievements || {}),
+          ...nextAchievements,
+        },
+      }));
+
+      setDoc(
+        doc(db, "users", user.uid),
+        {
+          achievements: nextAchievements,
+        },
+        { merge: true }
+      ).catch((error) => {
+        console.warn("Conquistas do quiz salvas localmente:", error);
+      });
+    }
+
     setPhase("result");
   }
 

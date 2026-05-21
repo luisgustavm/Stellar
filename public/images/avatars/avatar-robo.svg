@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Avatar robo">
+  <defs>
+    <linearGradient id="bg" x1="40" x2="280" y1="20" y2="300">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="0.48" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="91" x2="229" y1="91" y2="250">
+      <stop offset="0" stop-color="#e2e8f0"/>
+      <stop offset="1" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="160" fill="url(#bg)"/>
+  <path fill="none" stroke="#67e8f9" stroke-width="8" stroke-linecap="round" d="M160 84V52"/>
+  <circle cx="160" cy="45" r="12" fill="#facc15"/>
+  <rect x="84" y="95" width="152" height="136" rx="36" fill="url(#metal)"/>
+  <rect x="104" y="123" width="112" height="52" rx="22" fill="#0f172a"/>
+  <circle cx="132" cy="149" r="12" fill="#67e8f9"/>
+  <circle cx="188" cy="149" r="12" fill="#67e8f9"/>
+  <path fill="none" stroke="#0f172a" stroke-width="9" stroke-linecap="round" d="M129 200h62"/>
+  <rect x="62" y="139" width="25" height="57" rx="12" fill="#94a3b8"/>
+  <rect x="233" y="139" width="25" height="57" rx="12" fill="#94a3b8"/>
+  <circle cx="70" cy="76" r="4" fill="#f8fafc"/>
+  <circle cx="252" cy="249" r="4" fill="#facc15"/>
+</svg>

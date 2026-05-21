@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import Navbar from "../layout/Navbar";
 
@@ -24,7 +24,12 @@ export default function ProtectedRoute({ children }) {
         {children}
       </main>
       <footer className="rodape">
-        <p>&copy; {new Date().getFullYear()} Stellar Interaction. Todos os direitos reservados.</p>
+        <p>
+          &copy; {new Date().getFullYear()} Stellar Interaction.
+          <Link to="/privacy"> Privacidade</Link>
+          <span aria-hidden="true"> | </span>
+          <Link to="/terms"> Termos</Link>
+        </p>
       </footer>
     </div>
   );

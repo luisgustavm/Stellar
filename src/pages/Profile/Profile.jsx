@@ -7,6 +7,18 @@ import { StoreContext } from "../../context/StoreContext";
 import { useToast } from "../../context/ToastContext";
 import { UserContext } from "../../context/UserContext";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import {
+  achievementDefinitions,
+  mergeAchievements,
+  readLocalAchievements,
+  unlockAchievement,
+} from "../../data/achievements";
+import {
+  avatarPresets,
+  buildDiceBearUrl,
+  diceBearStyles,
+  isRemoteAvatarValue,
+} from "../../data/avatarOptions";
 import { storeItems } from "../../data/storeItems";
 import { auth, db } from "../../services/firebase";
 import { getAuthErrorMessage } from "../../utils/authErrors";
@@ -14,6 +26,8 @@ import "./Profile.css";
 
 const AVATAR_STORAGE_PREFIX = "stellar-local-avatar:";
 const PROFILE_STORAGE_PREFIX = "stellar-local-profile:";
+const QUIZ_HISTORY_KEY = "stellar-quiz-history";
+const GAME_STORAGE_PREFIX = "stellar-game:";
 
 function formatDate(value) {
   if (!value) return "Data não disponível";
@@ -27,6 +41,32 @@ function formatDate(value) {
     month: "long",
     year: "numeric",
   }).format(date);
+}
+
+function formatTime(seconds = 0) {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const rest = safeSeconds % 60;
+
+  return `${minutes}:${String(rest).padStart(2, "0")}`;
+}
+
+function readLocalJson(key, fallback = {}) {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function readQuizHistory() {
+  const history = readLocalJson(QUIZ_HISTORY_KEY, []);
+  return Array.isArray(history) ? history : [];
+}
+
+function readBestGame(uid) {
+  return readLocalJson(`${GAME_STORAGE_PREFIX}${uid || "guest"}`, null);
 }
 
 function getInitials(name = "Explorador") {
@@ -140,8 +180,13 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [localAvatar, setLocalAvatar] = useState("");
   const [localProfile, setLocalProfile] = useState({});
+  const [localAchievements, setLocalAchievements] = useState({});
+  const [quizHistory, setQuizHistory] = useState([]);
+  const [bestGame, setBestGame] = useState(null);
   const [avatarDraft, setAvatarDraft] = useState("");
   const [avatarFileName, setAvatarFileName] = useState("");
+  const [avatarSeed, setAvatarSeed] = useState("");
+  const [avatarStyle, setAvatarStyle] = useState(diceBearStyles[0].id);
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -164,6 +209,9 @@ export default function Profile() {
     if (!user?.uid) {
       setLocalAvatar("");
       setLocalProfile({});
+      setLocalAchievements({});
+      setQuizHistory([]);
+      setBestGame(null);
       setAvatarDraft("");
       return;
     }
@@ -171,8 +219,19 @@ export default function Profile() {
     const savedAvatar = localStorage.getItem(`${AVATAR_STORAGE_PREFIX}${user.uid}`) || "";
     const savedProfile = readLocalProfile(user.uid);
     setLocalProfile(savedProfile);
+    setLocalAchievements(readLocalAchievements(user.uid));
+    setQuizHistory(readQuizHistory());
+    setBestGame(readBestGame(user.uid));
     setLocalAvatar(savedAvatar);
     setAvatarDraft(savedAvatar);
+    setAvatarSeed(
+      savedProfile.username ||
+        savedProfile.name ||
+        user.username ||
+        user.name ||
+        user.email?.split("@")[0] ||
+        "stellar-explorer"
+    );
   }, [user?.uid]);
 
   useEffect(() => {
@@ -200,6 +259,33 @@ export default function Profile() {
     { label: "Itens", value: inventory.length },
     { label: "Perfil completo", value: `${completion}%` },
   ];
+  const achievements = mergeAchievements(profile?.achievements, localAchievements);
+  const unlockedAchievementIds = new Set(Object.keys(achievements));
+  const unlockedCount = unlockedAchievementIds.size;
+  const lastQuiz = quizHistory[0];
+  const lastGameReward = profile?.lastGameReward;
+  const dashboardItems = [
+    {
+      label: "Ultimo quiz",
+      value: lastQuiz ? `${lastQuiz.score}/${lastQuiz.total}` : "Sem registro",
+      detail: lastQuiz ? `${lastQuiz.accuracy}% de acerto` : "Finalize um quiz",
+    },
+    {
+      label: "Recorde no jogo",
+      value: bestGame ? bestGame.score : profile?.bestGame?.score || 0,
+      detail: `Tempo ${formatTime(bestGame?.time || profile?.bestGame?.time || 0)}`,
+    },
+    {
+      label: "Conquistas",
+      value: `${unlockedCount}/${achievementDefinitions.length}`,
+      detail: unlockedCount ? "badges desbloqueados" : "Comece uma missao",
+    },
+    {
+      label: "Ultima recompensa",
+      value: lastGameReward?.amount ? `+${lastGameReward.amount}` : "Nenhuma",
+      detail: lastGameReward?.stars ? `${lastGameReward.stars} estrelas no jogo` : "Ganhe moedas jogando",
+    },
+  ];
 
   async function handleAvatarFile(event) {
     const file = event.target.files?.[0];
@@ -219,10 +305,58 @@ export default function Profile() {
       const dataUrl = await readAvatarFile(file);
       setAvatarDraft(dataUrl);
       setAvatarFileName(file.name);
+      setForm((current) => ({ ...current, photoURL: "" }));
     } catch (error) {
       console.error(error);
       showToast("Não foi possível carregar essa imagem.", "error");
     }
+  }
+
+  function applyRemoteAvatar(src) {
+    setAvatarDraft("");
+    setAvatarFileName("");
+    setForm((current) => ({ ...current, photoURL: src }));
+  }
+
+  function handleSelectPreset(src) {
+    applyRemoteAvatar(src);
+    showToast("Avatar pronto selecionado. Salve o perfil para aplicar.", "success");
+  }
+
+  function handleGenerateAvatar() {
+    const seed =
+      avatarSeed.trim() ||
+      form.username ||
+      form.name ||
+      displayName ||
+      email ||
+      "stellar-explorer";
+    const generatedUrl = buildDiceBearUrl(avatarStyle, seed);
+
+    setAvatarSeed(seed);
+    applyRemoteAvatar(generatedUrl);
+    showToast("Avatar gerado. Salve o perfil para aplicar.", "success");
+  }
+
+  function handleRandomAvatar() {
+    const base =
+      avatarSeed.trim() ||
+      form.username ||
+      form.name ||
+      displayName ||
+      "stellar-explorer";
+    const randomSeed = `${base}-${Math.random().toString(36).slice(2, 8)}`;
+    const generatedUrl = buildDiceBearUrl(avatarStyle, randomSeed);
+
+    setAvatarSeed(randomSeed);
+    applyRemoteAvatar(generatedUrl);
+    showToast("Novo avatar gerado. Salve o perfil para aplicar.", "success");
+  }
+
+  function handleAvatarUrlChange(value) {
+    setAvatarDraft("");
+    setAvatarFileName("");
+    setForm((current) => ({ ...current, photoURL: value }));
   }
 
   async function handleSaveProfile(event) {
@@ -239,6 +373,11 @@ export default function Profile() {
 
     if (nextUsername.length < 3) {
       showToast("O username precisa ter pelo menos 3 caracteres.", "error");
+      return;
+    }
+
+    if (nextRemotePhoto && !isRemoteAvatarValue(nextRemotePhoto)) {
+      showToast("Use uma URL com http/https ou escolha um avatar pronto.", "error");
       return;
     }
 
@@ -284,6 +423,28 @@ export default function Profile() {
       setLocalAvatar(avatarDraft);
       setUser?.((current) => ({ ...current, ...localPayload }));
       setUserData?.((current) => ({ ...current, ...localPayload }));
+
+      if (user?.uid && (avatarDraft || nextRemotePhoto || localAvatar)) {
+        const nextAchievements = unlockAchievement(user.uid, "profile_ready");
+        setLocalAchievements(nextAchievements);
+        setUserData?.((current) => ({
+          ...current,
+          achievements: {
+            ...(current?.achievements || {}),
+            ...nextAchievements,
+          },
+        }));
+        setDoc(
+          doc(db, "users", user.uid),
+          {
+            achievements: nextAchievements,
+          },
+          { merge: true }
+        ).catch((error) => {
+          console.warn("Conquista de perfil salva localmente:", error);
+        });
+      }
+
       setAvatarFileName("");
       setIsEditing(false);
       showToast(
@@ -433,14 +594,65 @@ export default function Profile() {
                   {editPhoto ? <img src={editPhoto} alt="" /> : <span>{getInitials(form.name || displayName)}</span>}
                 </div>
 
-                <div>
+                <div className="profile-avatar-tools">
+                  <div className="profile-avatar-tool-header">
+                    <span>Avatar gratuito</span>
+                    <small>Escolha, gere ou use uma URL externa.</small>
+                  </div>
+
+                  <div className="profile-avatar-presets" aria-label="Avatares prontos">
+                    {avatarPresets.map((avatar) => (
+                      <button
+                        type="button"
+                        key={avatar.id}
+                        className={form.photoURL === avatar.src ? "is-selected" : ""}
+                        onClick={() => handleSelectPreset(avatar.src)}
+                      >
+                        <img src={avatar.src} alt="" />
+                        <span>{avatar.name}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="profile-avatar-generator">
+                    <label>
+                      <span>Gerar por nome</span>
+                      <input
+                        value={avatarSeed}
+                        onChange={(event) => setAvatarSeed(event.target.value)}
+                        placeholder={form.username || displayName}
+                      />
+                    </label>
+
+                    <label>
+                      <span>Estilo</span>
+                      <select
+                        value={avatarStyle}
+                        onChange={(event) => setAvatarStyle(event.target.value)}
+                      >
+                        {diceBearStyles.map((style) => (
+                          <option key={style.id} value={style.id}>
+                            {style.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <button type="button" onClick={handleGenerateAvatar}>
+                      Gerar
+                    </button>
+                    <button type="button" className="secondary" onClick={handleRandomAvatar}>
+                      Aleatorio
+                    </button>
+                  </div>
+
                   <label className="profile-file-label">
-                    <span>Foto de perfil por arquivo</span>
+                    <span>Arquivo local</span>
                     <input type="file" accept="image/*" onChange={handleAvatarFile} />
                   </label>
                   {avatarFileName && <p className="profile-file-name">{avatarFileName}</p>}
                   <button type="button" className="secondary" onClick={handleRemoveAvatar}>
-                    Remover foto
+                    Remover avatar
                   </button>
                 </div>
               </div>
@@ -464,11 +676,11 @@ export default function Profile() {
               </label>
 
               <label>
-                <span>URL do avatar opcional</span>
+                <span>URL externa do avatar</span>
                 <input
                   value={form.photoURL}
-                  onChange={(event) => setForm((current) => ({ ...current, photoURL: event.target.value }))}
-                  placeholder="https://..."
+                  onChange={(event) => handleAvatarUrlChange(event.target.value)}
+                  placeholder="https://exemplo.com/avatar.png"
                 />
               </label>
 
@@ -478,9 +690,9 @@ export default function Profile() {
               </label>
 
               <p className="profile-form-note">
-                Sem Firebase Storage: a foto enviada por arquivo fica salva
-                neste navegador. Nome, username e URL opcional são salvos no
-                Firestore.
+                Sem Firebase Storage: arquivo local fica salvo apenas neste
+                navegador. Avatar pronto, DiceBear e URL externa salvam apenas
+                um caminho de texto no Firestore.
               </p>
 
               <div className="profile-form-actions">
@@ -534,6 +746,44 @@ export default function Profile() {
             Complete seu nome, username, email, avatar e inventário para deixar
             sua estação mais preparada para a exploração.
           </p>
+        </section>
+
+        <section className="profile-panel profile-wide-panel" aria-labelledby="dashboard-title">
+          <div className="profile-panel-heading">
+            <p className="page-kicker">Dashboard</p>
+            <h2 id="dashboard-title">Resumo da jornada</h2>
+          </div>
+
+          <div className="profile-dashboard-grid">
+            {dashboardItems.map((item) => (
+              <article key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <small>{item.detail}</small>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="profile-panel profile-wide-panel" aria-labelledby="achievements-title">
+          <div className="profile-panel-heading">
+            <p className="page-kicker">Conquistas</p>
+            <h2 id="achievements-title">Badges desbloqueaveis</h2>
+          </div>
+
+          <div className="profile-achievements-grid">
+            {achievementDefinitions.map((achievement) => {
+              const unlocked = unlockedAchievementIds.has(achievement.id);
+
+              return (
+                <article key={achievement.id} className={unlocked ? "is-unlocked" : ""}>
+                  <span>{achievement.icon}</span>
+                  <strong>{achievement.title}</strong>
+                  <small>{achievement.description}</small>
+                </article>
+              );
+            })}
+          </div>
         </section>
 
         <section className="profile-panel profile-wide-panel" aria-labelledby="inventory-title">

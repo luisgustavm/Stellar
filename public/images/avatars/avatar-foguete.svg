@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Avatar foguete">
+  <defs>
+    <linearGradient id="bg" x1="40" x2="280" y1="20" y2="300">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="0.5" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="ship" x1="132" x2="206" y1="60" y2="224">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#94a3b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="160" fill="url(#bg)"/>
+  <circle cx="72" cy="68" r="4" fill="#facc15"/>
+  <circle cx="247" cy="56" r="5" fill="#e0f2fe"/>
+  <circle cx="260" cy="226" r="3" fill="#bae6fd"/>
+  <path fill="#ef4444" d="M127 209c-18 5-33 19-44 42 27-5 47-16 58-34z"/>
+  <path fill="#ef4444" d="M201 209c18 5 33 19 44 42-27-5-47-16-58-34z"/>
+  <path fill="url(#ship)" d="M160 46c42 34 61 86 51 156-16 17-35 25-51 25s-35-8-51-25C99 132 118 80 160 46z"/>
+  <path fill="#dc2626" d="M160 46c20 16 35 36 44 61-27-14-61-14-88 0 9-25 24-45 44-61z"/>
+  <circle cx="160" cy="138" r="29" fill="#0f172a"/>
+  <circle cx="160" cy="138" r="19" fill="#67e8f9"/>
+  <path fill="#f97316" d="M134 230h52l-26 58z"/>
+  <path fill="#facc15" d="M145 230h30l-15 38z"/>
+</svg>

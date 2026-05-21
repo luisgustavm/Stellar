@@ -1,0 +1,16 @@
+{
+  "name": "Stellar Interaction",
+  "short_name": "Stellar",
+  "description": "Site educativo e interativo sobre astronomia, planetas, quiz e jogo espacial.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "/favicon.svg?v=planet-1",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

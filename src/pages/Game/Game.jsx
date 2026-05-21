@@ -1,5 +1,15 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { doc, runTransaction, setDoc } from "firebase/firestore";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  collection,
+  doc,
+  limit as firestoreLimit,
+  onSnapshot,
+  orderBy,
+  query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import GameCanvas from "../../components/game/GameCanvas";
 import GameHUD from "../../components/game/GameHUD";
 import GameOverModal from "../../components/game/GameOverModal";
@@ -7,12 +17,14 @@ import { useAuth } from "../../context/AuthContext";
 import { CoinsContext } from "../../context/CoinsContext";
 import { UserContext } from "../../context/UserContext";
 import { useToast } from "../../context/ToastContext";
+import { unlockAchievement } from "../../data/achievements";
 import { db } from "../../services/firebase";
 import "./Game.css";
 
 const STARTING_COINS = 100;
 const STORE_STORAGE_PREFIX = "stellar-store:";
 const GAME_STORAGE_PREFIX = "stellar-game:";
+const GAME_SOUND_KEY = "stellar-game-sound";
 const initialStats = {
   score: 0,
   stars: 0,
@@ -85,21 +97,123 @@ function isBetterRun(stats, best) {
   return stats.time > (best?.time || 0) || stats.score > (best?.score || 0);
 }
 
+function readSoundPreference() {
+  try {
+    return localStorage.getItem(GAME_SOUND_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
+function formatPlayerName(user, userData) {
+  return (
+    userData?.name ||
+    userData?.username ||
+    user?.name ||
+    user?.username ||
+    user?.email?.split("@")[0] ||
+    "Explorador"
+  );
+}
+
 export default function Game() {
   const { user } = useAuth();
   const { coins, setCoins, loadingCoins } = useContext(CoinsContext);
   const { userData, setUserData } = useContext(UserContext);
   const { showToast } = useToast();
+  const audioContextRef = useRef(null);
   const [phase, setPhase] = useState("menu");
   const [runId, setRunId] = useState(0);
   const [stats, setStats] = useState(initialStats);
   const [finalStats, setFinalStats] = useState(initialStats);
   const [reward, setReward] = useState(null);
   const [bestGame, setBestGame] = useState(() => readBestGame(user?.uid));
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [soundEnabled, setSoundEnabled] = useState(readSoundPreference);
 
   useEffect(() => {
     setBestGame(readBestGame(user?.uid));
   }, [user?.uid]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GAME_SOUND_KEY, soundEnabled ? "on" : "off");
+    } catch {
+      // Preferimos manter o jogo funcionando mesmo se o navegador bloquear storage.
+    }
+  }, [soundEnabled]);
+
+  useEffect(() => {
+    if (!user?.uid) return undefined;
+
+    const leaderboardQuery = query(
+      collection(db, "gameScores"),
+      orderBy("score", "desc"),
+      firestoreLimit(8)
+    );
+
+    return onSnapshot(
+      leaderboardQuery,
+      (snapshot) => {
+        setLeaderboard(
+          snapshot.docs.map((item) => ({
+            id: item.id,
+            ...item.data(),
+          }))
+        );
+      },
+      (error) => {
+        console.warn("Nao foi possivel carregar o ranking do jogo:", error);
+      }
+    );
+  }, [user?.uid]);
+
+  const playGameSound = useCallback(
+    (type) => {
+      if (!soundEnabled) return;
+
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+
+      const audioContext = audioContextRef.current || new AudioContext();
+      audioContextRef.current = audioContext;
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+      }
+
+      const soundMap = {
+        shoot: { frequency: 620, duration: 0.07, type: "square", gain: 0.035 },
+        empty: { frequency: 170, duration: 0.08, type: "sawtooth", gain: 0.03 },
+        star: { frequency: 880, duration: 0.09, type: "triangle", gain: 0.04 },
+        meteor: { frequency: 92, duration: 0.18, type: "sawtooth", gain: 0.05 },
+        hit: { frequency: 130, duration: 0.16, type: "square", gain: 0.045 },
+        gameover: { frequency: 72, duration: 0.38, type: "sawtooth", gain: 0.05 },
+      };
+      const config = soundMap[type] || soundMap.star;
+      const now = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.type = config.type;
+      oscillator.frequency.setValueAtTime(config.frequency, now);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        Math.max(40, config.frequency * 0.45),
+        now + config.duration
+      );
+      gain.gain.setValueAtTime(config.gain, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + config.duration);
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start(now);
+      oscillator.stop(now + config.duration);
+    },
+    [soundEnabled]
+  );
+
+  function toggleSound() {
+    setSoundEnabled((current) => !current);
+  }
 
   const getCurrentCoins = useCallback(() => {
     const localCoins = Number(readLocalStore(user?.uid)?.coins);
@@ -141,8 +255,28 @@ export default function Game() {
           console.warn("Recorde do jogo salvo localmente porque o Firebase recusou:", error);
         }
       }
+
+      if (user?.uid) {
+        const playerName = formatPlayerName(user, userData);
+
+        setDoc(
+          doc(db, "gameScores", user.uid),
+          {
+            uid: user.uid,
+            name: playerName,
+            score: Math.max(nextStats.score, nextBest.score || 0),
+            stars: Math.max(nextStats.stars, nextBest.stars || 0),
+            time: Math.max(nextStats.time, nextBest.time || 0),
+            meteorsDestroyed: nextStats.meteorsDestroyed || 0,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        ).catch((error) => {
+          console.warn("Ranking do jogo indisponivel:", error);
+        });
+      }
     },
-    [user?.uid]
+    [user, userData]
   );
 
   const grantGameReward = useCallback(
@@ -265,8 +399,55 @@ export default function Game() {
       setPhase("gameOver");
       updateBestGame(nextStats);
       grantGameReward(nextStats).then(setReward);
+
+      if (user?.uid) {
+        const nextAchievements = {
+          ...unlockAchievement(user.uid, "first_game", { score: nextStats.score }),
+        };
+
+        if ((nextStats.meteorsDestroyed || 0) >= 20) {
+          Object.assign(
+            nextAchievements,
+            unlockAchievement(user.uid, "meteor_hunter", {
+              meteorsDestroyed: nextStats.meteorsDestroyed,
+            })
+          );
+        }
+
+        if ((nextStats.score || 0) >= 1000) {
+          Object.assign(
+            nextAchievements,
+            unlockAchievement(user.uid, "score_1000", { score: nextStats.score })
+          );
+        }
+
+        if ((nextStats.stars || 0) >= 100) {
+          Object.assign(
+            nextAchievements,
+            unlockAchievement(user.uid, "centurion_stars", { stars: nextStats.stars })
+          );
+        }
+
+        setUserData?.((current) => ({
+          ...current,
+          achievements: {
+            ...(current?.achievements || {}),
+            ...nextAchievements,
+          },
+        }));
+
+        setDoc(
+          doc(db, "users", user.uid),
+          {
+            achievements: nextAchievements,
+          },
+          { merge: true }
+        ).catch((error) => {
+          console.warn("Conquistas do jogo salvas localmente:", error);
+        });
+      }
     },
-    [grantGameReward, updateBestGame]
+    [grantGameReward, setUserData, updateBestGame, user?.uid]
   );
 
   return (
@@ -306,9 +487,39 @@ export default function Game() {
               <span>WASD ou setas</span>
             </div>
 
-            <button className="stellar-button" type="button" onClick={startGame}>
-              Jogar
-            </button>
+            <div className="game-menu-actions">
+              <button className="stellar-button" type="button" onClick={startGame}>
+                Jogar
+              </button>
+              <button
+                type="button"
+                className="game-sound-toggle"
+                onClick={toggleSound}
+                aria-pressed={soundEnabled}
+              >
+                Som {soundEnabled ? "ligado" : "desligado"}
+              </button>
+            </div>
+
+            <section className="game-leaderboard" aria-labelledby="game-ranking-title">
+              <div className="game-leaderboard-heading">
+                <p className="page-kicker">Ranking</p>
+                <h2 id="game-ranking-title">Melhores pilotos</h2>
+              </div>
+              {leaderboard.length > 0 ? (
+                <ol>
+                  {leaderboard.map((entry, entryIndex) => (
+                    <li key={entry.id}>
+                      <span>{entryIndex + 1}</span>
+                      <strong>{entry.name || "Explorador"}</strong>
+                      <em>{entry.score || 0} pts</em>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p>Nenhum registro publico ainda. Jogue uma partida para abrir o placar.</p>
+              )}
+            </section>
           </section>
         </main>
       )}
@@ -321,6 +532,8 @@ export default function Game() {
             loadingCoins={loadingCoins}
             paused={phase === "paused"}
             onTogglePause={togglePause}
+            soundEnabled={soundEnabled}
+            onToggleSound={toggleSound}
           />
           <section className="game-stage" aria-label="Área de jogo">
             <GameCanvas
@@ -329,6 +542,7 @@ export default function Game() {
               restartKey={runId}
               onStatsChange={setStats}
               onGameOver={handleGameOver}
+              onSoundEvent={playGameSound}
             />
             {phase === "paused" && (
               <div className="game-pause-overlay" role="status" aria-live="polite">

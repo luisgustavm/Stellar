@@ -62,6 +62,7 @@ function fireBullet(game, now, isPaused) {
 
   if (game.ammo <= 0) {
     game.emptyAmmoPulseUntil = now + 260;
+    game.onSoundEvent?.("empty");
     return false;
   }
 
@@ -80,6 +81,8 @@ function fireBullet(game, now, isPaused) {
     height: BULLET_HEIGHT,
     bornAt: now,
   });
+
+  game.onSoundEvent?.("shoot");
 
   return true;
 }
@@ -412,7 +415,14 @@ function createBackdropStars(width, height) {
   }));
 }
 
-export default function GameCanvas({ running, restartKey, paused = false, onStatsChange, onGameOver }) {
+export default function GameCanvas({
+  running,
+  restartKey,
+  paused = false,
+  onStatsChange,
+  onGameOver,
+  onSoundEvent,
+}) {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const keysRef = useRef(new Set());
@@ -422,6 +432,12 @@ export default function GameCanvas({ running, restartKey, paused = false, onStat
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
+
+  useEffect(() => {
+    if (gameRef.current) {
+      gameRef.current.onSoundEvent = onSoundEvent;
+    }
+  }, [onSoundEvent]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -507,6 +523,7 @@ export default function GameCanvas({ running, restartKey, paused = false, onStat
       nextReloadAt: null,
       lastShotAt: 0,
       emptyAmmoPulseUntil: 0,
+      onSoundEvent,
       shotsFired: 0,
       meteorsDestroyed: 0,
       startedAt: performance.now(),
@@ -560,6 +577,7 @@ export default function GameCanvas({ running, restartKey, paused = false, onStat
         meteorsDestroyed: game.meteorsDestroyed,
         shotsFired: game.shotsFired,
       });
+      game.onSoundEvent?.("gameover");
     }
 
     function emitStats(force = false) {
@@ -712,6 +730,7 @@ export default function GameCanvas({ running, restartKey, paused = false, onStat
           game.explosions.push(
             createExplosion(meteor.x + meteor.size / 2, meteor.y + meteor.size / 2, meteor.size, now)
           );
+          game.onSoundEvent?.("meteor");
           game.meteors.splice(hitIndex, 1);
         }
       }
@@ -724,6 +743,7 @@ export default function GameCanvas({ running, restartKey, paused = false, onStat
         game.stars += star.value;
         game.score += star.value;
         game.explosions.push(createExplosion(star.x, star.y, star.radius * 2, now, "spark"));
+        game.onSoundEvent?.("star");
         return false;
       });
 
@@ -739,6 +759,7 @@ export default function GameCanvas({ running, restartKey, paused = false, onStat
           game.explosions.push(
             createExplosion(meteor.x + meteor.size / 2, meteor.y + meteor.size / 2, meteor.size, now)
           );
+          game.onSoundEvent?.("hit");
           game.meteors.splice(hitIndex, 1);
           game.lives -= 1;
           game.player.invulnerableUntil = now + 1250;

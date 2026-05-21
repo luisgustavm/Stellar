@@ -17,12 +17,18 @@ const Game = lazy(() => import("../pages/Game/Game"));
 const Mysteries = lazy(() => import("../pages/Mysteries/Mysteries"));
 const Feedback = lazy(() => import("../pages/Feedback/Feedback"));
 const Profile = lazy(() => import("../pages/Profile/Profile"));
+const Privacy = lazy(() => import("../pages/Legal/Privacy"));
+const Terms = lazy(() => import("../pages/Legal/Terms"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
 function RouteLoader() {
   return (
     <div className="route-loader" role="status" aria-live="polite">
-      Carregando módulo estelar...
+      <div className="route-loader-card">
+        <span aria-hidden="true" />
+        <strong>Carregando modulo estelar</strong>
+        <small>Preparando a proxima orbita...</small>
+      </div>
     </div>
   );
 }
@@ -57,6 +63,10 @@ export default function AppRoutes() {
             </PublicRoute>
           }
         />
+
+        <Route path="/privacy" element={<Privacy />} />
+
+        <Route path="/terms" element={<Terms />} />
 
         <Route
           path="/"

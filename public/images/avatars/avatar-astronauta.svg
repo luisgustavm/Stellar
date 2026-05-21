@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Avatar astronauta">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="25%" r="75%">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="0.44" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#020617"/>
+    </radialGradient>
+    <linearGradient id="visor" x1="92" x2="228" y1="112" y2="202">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="0.45" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="160" fill="url(#bg)"/>
+  <circle cx="64" cy="68" r="5" fill="#facc15"/>
+  <circle cx="252" cy="74" r="4" fill="#e0f2fe"/>
+  <circle cx="264" cy="224" r="3" fill="#bae6fd"/>
+  <path fill="#e2e8f0" d="M91 169c0-51 31-88 69-88s69 37 69 88v41c0 22-18 40-40 40h-58c-22 0-40-18-40-40v-41z"/>
+  <path fill="#94a3b8" d="M84 176c-12-1-21 8-21 21v15c0 13 9 22 21 21v-57zm152 0v57c12 1 21-8 21-21v-15c0-13-9-22-21-21z"/>
+  <rect x="104" y="104" width="112" height="103" rx="50" fill="#cbd5e1"/>
+  <rect x="116" y="117" width="88" height="76" rx="34" fill="url(#visor)"/>
+  <path fill="#facc15" d="M130 218h60a12 12 0 0 1 12 12v18H118v-18a12 12 0 0 1 12-12z"/>
+  <circle cx="207" cy="229" r="5" fill="#ef4444"/>
+  <circle cx="224" cy="229" r="5" fill="#22c55e"/>
+</svg>

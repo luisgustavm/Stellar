@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Avatar cometa">
+  <defs>
+    <radialGradient id="bg" cx="70%" cy="25%" r="85%">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="0.42" stop-color="#312e81"/>
+      <stop offset="1" stop-color="#020617"/>
+    </radialGradient>
+    <radialGradient id="core" cx="45%" cy="35%" r="65%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.4" stop-color="#facc15"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </radialGradient>
+  </defs>
+  <rect width="320" height="320" rx="160" fill="url(#bg)"/>
+  <path fill="none" stroke="#67e8f9" stroke-width="30" stroke-linecap="round" opacity="0.45" d="M60 91c57 14 105 40 144 93"/>
+  <path fill="none" stroke="#bae6fd" stroke-width="16" stroke-linecap="round" opacity="0.7" d="M42 138c62 6 115 23 164 64"/>
+  <path fill="none" stroke="#fef3c7" stroke-width="9" stroke-linecap="round" opacity="0.9" d="M82 205c42-4 84 1 128 26"/>
+  <circle cx="222" cy="215" r="50" fill="url(#core)"/>
+  <circle cx="209" cy="202" r="11" fill="#fed7aa" opacity="0.75"/>
+  <circle cx="238" cy="229" r="7" fill="#7c2d12" opacity="0.35"/>
+  <circle cx="85" cy="66" r="4" fill="#f8fafc"/>
+  <circle cx="252" cy="77" r="3" fill="#facc15"/>
+</svg>

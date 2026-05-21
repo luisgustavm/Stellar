@@ -8,6 +8,7 @@ import { CoinsContext } from "../../context/CoinsContext";
 import { StoreContext } from "../../context/StoreContext";
 import { useToast } from "../../context/ToastContext";
 import { UserContext } from "../../context/UserContext";
+import { unlockAchievement } from "../../data/achievements";
 import { storeItems } from "../../data/storeItems";
 import { db } from "../../services/firebase";
 import "./Store.css";
@@ -231,6 +232,28 @@ export default function Store() {
         initialCoinsGranted: true,
         inventory: nextInventory,
       }));
+
+      const nextAchievements = {
+        ...unlockAchievement(user.uid, "first_purchase", { itemId: item.id }),
+      };
+
+      if (nextInventory.length >= 5) {
+        Object.assign(
+          nextAchievements,
+          unlockAchievement(user.uid, "collector", { items: nextInventory.length })
+        );
+      }
+
+      setDoc(
+        doc(db, "users", user.uid),
+        {
+          achievements: nextAchievements,
+        },
+        { merge: true }
+      ).catch((error) => {
+        console.warn("Conquistas da loja salvas localmente:", error);
+      });
+
       setSelectedItem(null);
       showToast(`${item.name} comprado com sucesso.`, "success");
     } catch (error) {
@@ -255,6 +278,13 @@ export default function Store() {
           coins: nextCoins,
           initialCoinsGranted: true,
           inventory: nextInventory,
+          achievements: {
+            ...(current?.achievements || {}),
+            ...unlockAchievement(user.uid, "first_purchase", { itemId: item.id }),
+            ...(nextInventory.length >= 5
+              ? unlockAchievement(user.uid, "collector", { items: nextInventory.length })
+              : {}),
+          },
         }));
         setSelectedItem(null);
         showToast(`${item.name} comprado. Salvamos no seu navegador enquanto o Firebase está indisponível.`, "success");

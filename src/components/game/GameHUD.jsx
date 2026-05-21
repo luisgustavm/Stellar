@@ -12,6 +12,8 @@ export default function GameHUD({
   loadingCoins = false,
   paused = false,
   onTogglePause,
+  soundEnabled = false,
+  onToggleSound,
 }) {
   const ammo = stats.ammo ?? 0;
   const maxAmmo = stats.maxAmmo ?? 6;
@@ -67,6 +69,14 @@ export default function GameHUD({
         aria-pressed={paused}
       >
         {paused ? "Continuar" : "Pausar"}
+      </button>
+      <button
+        className="game-sound-button"
+        type="button"
+        onClick={onToggleSound}
+        aria-pressed={soundEnabled}
+      >
+        Som {soundEnabled ? "on" : "off"}
       </button>
     </aside>
   );
