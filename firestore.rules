@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function activeAccount() {
+      return !("accountStatus" in resource.data)
+        || !(resource.data.accountStatus in ["disabled", "deleted"]);
+    }
+
+    function validString(field, maxSize) {
+      return !(field in request.resource.data)
+        || (request.resource.data[field] is string
+          && request.resource.data[field].size() <= maxSize);
+    }
+
+    function validNumber(field, minValue, maxValue) {
+      return !(field in request.resource.data)
+        || (request.resource.data[field] is number
+          && request.resource.data[field] >= minValue
+          && request.resource.data[field] <= maxValue);
+    }
+
+    function validUserDocument() {
+      return request.resource.data.keys().hasOnly([
+        "name",
+        "email",
+        "username",
+        "photoURL",
+        "avatarUrl",
+        "coins",
+        "initialCoinsGranted",
+        "quizReward",
+        "inventory",
+        "equipped",
+        "bestGame",
+        "lastGameReward",
+        "accountStatus",
+        "disabledAt",
+        "createdAt",
+        "updatedAt"
+      ])
+      && validString("name", 80)
+      && validString("email", 160)
+      && validString("username", 40)
+      && validString("photoURL", 900)
+      && validString("avatarUrl", 900)
+      && validNumber("coins", 0, 100000)
+      && (!("initialCoinsGranted" in request.resource.data)
+        || request.resource.data.initialCoinsGranted is bool)
+      && (!("inventory" in request.resource.data)
+        || request.resource.data.inventory is list)
+      && (!("equipped" in request.resource.data)
+        || request.resource.data.equipped is map)
+      && (!("quizReward" in request.resource.data)
+        || request.resource.data.quizReward is map)
+      && (!("bestGame" in request.resource.data)
+        || request.resource.data.bestGame is map)
+      && (!("lastGameReward" in request.resource.data)
+        || request.resource.data.lastGameReward is map)
+      && (!("accountStatus" in request.resource.data)
+        || request.resource.data.accountStatus in ["active", "disabled", "deleted"]);
+    }
+
+    function selfDeactivation(uid) {
+      return isOwner(uid)
+        && activeAccount()
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          "accountStatus",
+          "disabledAt"
+        ])
+        && request.resource.data.accountStatus == "disabled";
+    }
+
+    function validFeedback() {
+      return request.resource.data.keys().hasOnly([
+        "uid",
+        "name",
+        "email",
+        "category",
+        "categoryLabel",
+        "rating",
+        "message",
+        "createdAt",
+        "source",
+        "targetEmail"
+      ])
+      && request.resource.data.name is string
+      && request.resource.data.name.size() >= 2
+      && request.resource.data.name.size() <= 80
+      && request.resource.data.email is string
+      && request.resource.data.email.size() >= 5
+      && request.resource.data.email.size() <= 160
+      && request.resource.data.category is string
+      && request.resource.data.categoryLabel is string
+      && request.resource.data.rating is number
+      && request.resource.data.rating >= 1
+      && request.resource.data.rating <= 5
+      && request.resource.data.message is string
+      && request.resource.data.message.size() >= 12
+      && request.resource.data.message.size() <= 900
+      && request.resource.data.source == "web"
+      && (!("uid" in request.resource.data)
+        || request.resource.data.uid == null
+        || request.resource.data.uid == request.auth.uid);
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validUserDocument();
+      allow update: if (isOwner(uid) && activeAccount() && validUserDocument())
+        || selfDeactivation(uid);
+      allow delete: if false;
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if signedIn() && validFeedback();
+      allow read, update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
