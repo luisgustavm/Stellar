@@ -17,6 +17,17 @@ const categories = [
   { value: "conteudo", label: "Conteúdo" },
 ];
 
+function formatFeedbackDate(date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(new Date(date));
+}
+
+function getRatingSummary(rating) {
+  return `${rating}/5 estrelas`;
+}
+
 function withTimeout(promise, timeout = 5500) {
   let timeoutId;
 
@@ -49,6 +60,9 @@ function saveLocalFeedback(payload) {
 }
 
 async function sendFeedbackEmail(payload) {
+  const submittedAt = formatFeedbackDate(payload.createdAt);
+  const ratingSummary = getRatingSummary(payload.rating);
+
   const response = await fetch(FEEDBACK_EMAIL_ENDPOINT, {
     method: "POST",
     headers: {
@@ -56,18 +70,20 @@ async function sendFeedbackEmail(payload) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      _subject: `Novo feedback - ${payload.categoryLabel}`,
-      _template: "table",
+      _subject: `Stellar Interaction | ${payload.categoryLabel} | ${ratingSummary}`,
+      _template: "box",
       _captcha: "false",
-      name: payload.name,
-      email: payload.email,
       _replyto: payload.email,
-      categoria: payload.categoryLabel,
-      avaliacao: `${payload.rating}/5`,
-      mensagem: payload.message,
-      usuarioId: payload.uid || "sem login",
-      origem: "Stellar Interaction",
-      criadoEm: new Date(payload.createdAt).toLocaleString("pt-BR"),
+      Projeto: "Stellar Interaction",
+      Status: "Novo feedback recebido pelo site",
+      Categoria: payload.categoryLabel,
+      Avaliacao: ratingSummary,
+      "Nome do usuario": payload.name,
+      "Email para resposta": payload.email,
+      Mensagem: payload.message,
+      "ID do usuario": payload.uid || "Usuario nao identificado",
+      Origem: "Formulario de feedback do site",
+      "Data do envio": submittedAt,
     }),
   });
 
