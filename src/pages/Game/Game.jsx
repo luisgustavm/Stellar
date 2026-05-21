@@ -25,12 +25,13 @@ const STARTING_COINS = 100;
 const STORE_STORAGE_PREFIX = "stellar-store:";
 const GAME_STORAGE_PREFIX = "stellar-game:";
 const GAME_SOUND_KEY = "stellar-game-sound";
+const INITIAL_GAME_SPEED = 190;
 const initialStats = {
   score: 0,
   stars: 0,
   lives: 3,
   time: 0,
-  speed: 230,
+  speed: INITIAL_GAME_SPEED,
   ammo: 6,
   maxAmmo: 6,
   reloadProgress: 1,
@@ -121,7 +122,10 @@ export default function Game() {
   const { coins, setCoins, loadingCoins } = useContext(CoinsContext);
   const { userData, setUserData } = useContext(UserContext);
   const { showToast } = useToast();
+  const gameShellRef = useRef(null);
   const audioContextRef = useRef(null);
+  const activeRunRewardIdRef = useRef(null);
+  const rewardedRunRewardIdRef = useRef(null);
   const [phase, setPhase] = useState("menu");
   const [runId, setRunId] = useState(0);
   const [stats, setStats] = useState(initialStats);
@@ -130,6 +134,7 @@ export default function Game() {
   const [bestGame, setBestGame] = useState(() => readBestGame(user?.uid));
   const [leaderboard, setLeaderboard] = useState([]);
   const [soundEnabled, setSoundEnabled] = useState(readSoundPreference);
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     setBestGame(readBestGame(user?.uid));
@@ -215,6 +220,45 @@ export default function Game() {
     setSoundEnabled((current) => !current);
   }
 
+  const enterFullscreen = useCallback(() => {
+    setFullscreen(true);
+
+    const element = gameShellRef.current;
+    if (!element?.requestFullscreen || document.fullscreenElement) return;
+
+    element.requestFullscreen().catch(() => {
+      // Mantemos o modo imersivo por CSS quando o navegador bloqueia fullscreen.
+    });
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    setFullscreen(false);
+
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (fullscreen) {
+      exitFullscreen();
+      return;
+    }
+
+    enterFullscreen();
+  }, [enterFullscreen, exitFullscreen, fullscreen]);
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement) {
+        setFullscreen(false);
+      }
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
   const getCurrentCoins = useCallback(() => {
     const localCoins = Number(readLocalStore(user?.uid)?.coins);
 
@@ -280,7 +324,7 @@ export default function Game() {
   );
 
   const grantGameReward = useCallback(
-    async (nextStats) => {
+    async (nextStats, rewardId) => {
       const amount = Math.floor(nextStats.stars / 100) * 20;
 
       if (amount <= 0) {
@@ -302,12 +346,14 @@ export default function Game() {
       const fallbackCoins = getCurrentCoins();
       let nextCoins = fallbackCoins + amount;
       const gameReward = {
+        id: rewardId,
         amount,
         stars: nextStats.stars,
         score: nextStats.score,
         time: nextStats.time,
         earnedAt: Date.now(),
       };
+      let duplicateReward = false;
 
       try {
         await runTransaction(db, async (transaction) => {
@@ -320,6 +366,12 @@ export default function Game() {
             fallbackCoins,
             STARTING_COINS
           );
+
+          if (rewardId && data.lastGameReward?.id === rewardId) {
+            duplicateReward = true;
+            nextCoins = currentCoins;
+            return;
+          }
 
           nextCoins = currentCoins + amount;
 
@@ -336,6 +388,23 @@ export default function Game() {
       } catch (error) {
         console.warn("Recompensa do jogo salva localmente porque o Firebase recusou:", error);
         nextCoins = fallbackCoins + amount;
+      }
+
+      if (duplicateReward) {
+        saveLocalStore(user.uid, {
+          coins: nextCoins,
+        });
+        setCoins(nextCoins);
+        setUserData?.((current) => ({
+          ...current,
+          coins: nextCoins,
+        }));
+
+        return {
+          amount: 0,
+          status: "already-paid",
+          message: "Esta partida ja teve a recompensa aplicada.",
+        };
       }
 
       saveLocalStore(user.uid, {
@@ -361,6 +430,10 @@ export default function Game() {
   );
 
   function startGame() {
+    activeRunRewardIdRef.current = `game-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    rewardedRunRewardIdRef.current = null;
     setStats(initialStats);
     setFinalStats(initialStats);
     setReward(null);
@@ -394,11 +467,18 @@ export default function Game() {
 
   const handleGameOver = useCallback(
     (nextStats) => {
+      const rewardId = activeRunRewardIdRef.current || `game-${Date.now()}`;
+
+      if (rewardedRunRewardIdRef.current === rewardId) {
+        return;
+      }
+
+      rewardedRunRewardIdRef.current = rewardId;
       setStats(nextStats);
       setFinalStats(nextStats);
       setPhase("gameOver");
       updateBestGame(nextStats);
-      grantGameReward(nextStats).then(setReward);
+      grantGameReward(nextStats, rewardId).then(setReward);
 
       if (user?.uid) {
         const nextAchievements = {
@@ -451,7 +531,10 @@ export default function Game() {
   );
 
   return (
-    <div className={`game-page is-${phase}`}>
+    <div
+      ref={gameShellRef}
+      className={`game-page is-${phase} ${fullscreen ? "is-fullscreen" : ""}`}
+    >
       {phase === "menu" && (
         <main className="game-menu">
           <section className="game-menu-card">
@@ -483,13 +566,21 @@ export default function Game() {
               <span>Shift ou botao direito atira</span>
               <span>municao recarregavel</span>
               <span>meteoros com 1 a 4 vidas</span>
-              <span>velocidade crescente</span>
+              <span>velocidade aumenta apos 2 minutos</span>
               <span>WASD ou setas</span>
             </div>
 
             <div className="game-menu-actions">
               <button className="stellar-button" type="button" onClick={startGame}>
                 Jogar
+              </button>
+              <button
+                type="button"
+                className="game-fullscreen-toggle"
+                onClick={toggleFullscreen}
+                aria-pressed={fullscreen}
+              >
+                {fullscreen ? "Sair da tela cheia" : "Tela cheia"}
               </button>
               <button
                 type="button"
@@ -534,6 +625,8 @@ export default function Game() {
             onTogglePause={togglePause}
             soundEnabled={soundEnabled}
             onToggleSound={toggleSound}
+            fullscreen={fullscreen}
+            onToggleFullscreen={toggleFullscreen}
           />
           <section className="game-stage" aria-label="Área de jogo">
             <GameCanvas

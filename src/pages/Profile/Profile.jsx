@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { StoreContext } from "../../context/StoreContext";
 import { useToast } from "../../context/ToastContext";
 import { UserContext } from "../../context/UserContext";
+import AvatarAccessory from "../../components/user/AvatarAccessory";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import {
   achievementDefinitions,
@@ -22,6 +23,7 @@ import {
 import { storeItems } from "../../data/storeItems";
 import { auth, db } from "../../services/firebase";
 import { getAuthErrorMessage } from "../../utils/authErrors";
+import { getEquippedAvatarItems } from "../../utils/storeEquipment";
 import "./Profile.css";
 
 const AVATAR_STORAGE_PREFIX = "stellar-local-avatar:";
@@ -204,6 +206,7 @@ export default function Profile() {
   const createdAt = formatDate(profile?.createdAt);
   const inventory = resolveInventoryItems(profile?.inventory?.length ? profile.inventory : sessionInventory);
   const equipped = profile?.equipped || sessionEquipped || {};
+  const equippedAvatarItems = getEquippedAvatarItems(equipped);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -527,6 +530,9 @@ export default function Profile() {
       <header className="profile-hero">
         <div className="profile-avatar" aria-label={`Avatar de ${displayName}`}>
           {photo ? <img src={photo} alt="" /> : <span>{getInitials(displayName)}</span>}
+          {equippedAvatarItems.map((item) => (
+            <AvatarAccessory key={item.id} item={item} size="profile" />
+          ))}
         </div>
 
         <div className="profile-identity">

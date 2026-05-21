@@ -11,6 +11,7 @@ import { UserContext } from "../../context/UserContext";
 import { unlockAchievement } from "../../data/achievements";
 import { storeItems } from "../../data/storeItems";
 import { db } from "../../services/firebase";
+import { equipStoreItem, unequipStoreItem } from "../../utils/storeEquipment";
 import "./Store.css";
 
 const STARTING_COINS = 100;
@@ -302,10 +303,7 @@ export default function Store() {
   async function handleEquip(item) {
     if (!ownedIds.has(item.id)) return;
 
-    const nextEquipped = {
-      ...equipped,
-      [item.type]: item,
-    };
+    const nextEquipped = equipStoreItem(equipped, item);
 
     setEquipped(nextEquipped);
     persistLocalStore({
@@ -335,10 +333,7 @@ export default function Store() {
   }
 
   async function handleUnequip(item) {
-    const nextEquipped = {
-      ...equipped,
-      [item.type]: null,
-    };
+    const nextEquipped = unequipStoreItem(equipped, item);
 
     setEquipped(nextEquipped);
     persistLocalStore({

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Estrela Guia">
+  <defs>
+    <radialGradient id="bg" cx="45%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#fff7ad"/>
+      <stop offset="0.45" stop-color="#facc15"/>
+      <stop offset="1" stop-color="#92400e"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="320" height="320" rx="64" fill="#020617"/>
+  <circle cx="160" cy="160" r="120" fill="rgba(250,204,21,0.12)"/>
+  <path filter="url(#glow)" fill="url(#bg)" d="m160 38 33 79 85 8-64 56 19 84-73-44-73 44 19-84-64-56 85-8z"/>
+  <path fill="rgba(255,255,255,0.62)" d="m160 76 20 48 52 5-39 34 12 51-45-27-45 27 12-51-39-34 52-5z"/>
+</svg>

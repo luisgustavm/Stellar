@@ -1,3 +1,5 @@
+import { getStoreSlotLabel, isStoreItemEquipped } from "../../utils/storeEquipment";
+
 const typeLabels = {
   avatar: "Avatar",
   background: "Fundo",
@@ -15,14 +17,17 @@ export default function Inventory({ items = [], equipped = {}, onEquip, onUnequi
   return (
     <div className="inventory-grid" aria-label="Itens comprados">
       {items.map((item) => {
-        const isEquipped = equipped?.[item.type]?.id === item.id || equipped?.[item.type] === item.id;
-        const visualClass = `inventory-visual ${item.type} ${item.accent} ${item.gifClass || ""}`;
+        const isEquipped = isStoreItemEquipped(equipped, item);
+        const visualClass = `inventory-visual ${item.type} ${item.accent} ${item.gifClass || ""} item-${item.id}`;
 
         return (
           <article key={item.id} className={`inventory-item ${item.accent}`}>
-            <div className={visualClass} aria-hidden="true" />
+            <div className={visualClass} aria-hidden="true">
+              {item.image ? <img src={item.image} alt="" /> : <span className="store-item-symbol" />}
+            </div>
             <div>
               <span>{typeLabels[item.type] || item.type}</span>
+              {item.slot && <span>{getStoreSlotLabel(item)}</span>}
               <p>{item.name}</p>
               {isEquipped && <strong>Equipado</strong>}
             </div>

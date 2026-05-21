@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { getStoreSlotLabel } from "../../utils/storeEquipment";
 
 export default function PurchaseModal({
   open,
@@ -24,7 +25,7 @@ export default function PurchaseModal({
 
   if (!open || !item) return null;
 
-  const visualClass = `store-item-visual ${item.type} ${item.accent} ${item.gifClass || ""}`;
+  const visualClass = `store-item-visual ${item.type} ${item.accent} ${item.gifClass || ""} item-${item.id}`;
 
   return (
     <div className="store-modal-backdrop" role="presentation" onClick={onClose}>
@@ -44,11 +45,14 @@ export default function PurchaseModal({
           X
         </button>
 
-        <div className={visualClass} aria-hidden="true" />
+        <div className={visualClass} aria-hidden="true">
+          {item.image ? <img src={item.image} alt="" /> : <span className="store-item-symbol" />}
+        </div>
 
         <p className="page-kicker">Confirmar compra</p>
         <h2 id="purchase-title">{item.name}</h2>
         <p>{item.description}</p>
+        {item.slot && <p className="store-slot-note">Slot: {getStoreSlotLabel(item)}</p>}
 
         <dl className="purchase-summary">
           <div>

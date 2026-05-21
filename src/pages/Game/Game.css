@@ -17,6 +17,38 @@
   overflow: visible;
 }
 
+.game-page.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  align-content: stretch;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: clamp(10px, 1.6vw, 18px);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(103, 232, 249, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 20%, rgba(250, 204, 21, 0.12), transparent 32%),
+    linear-gradient(160deg, #020617, #07111f 52%, #020617);
+}
+
+.game-page.is-fullscreen.is-menu {
+  place-items: center;
+}
+
+.game-page.is-fullscreen .game-stage {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.game-page.is-fullscreen .game-hud,
+.game-page.is-fullscreen .game-controls-hint {
+  width: 100%;
+}
+
 .game-menu {
   width: min(100%, 980px);
   display: grid;
@@ -119,7 +151,8 @@
 }
 
 .game-menu-card .stellar-button,
-.game-sound-toggle {
+.game-sound-toggle,
+.game-fullscreen-toggle {
   width: min(100%, 320px);
   min-height: 48px;
 }
@@ -223,7 +256,7 @@
 .game-hud {
   width: min(100%, 1180px);
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr)) minmax(132px, auto) minmax(112px, auto) minmax(110px, auto);
+  grid-template-columns: repeat(8, minmax(0, 1fr)) minmax(132px, auto) minmax(112px, auto) minmax(110px, auto) minmax(132px, auto);
   gap: 8px;
   align-items: center;
   margin: 0 auto;
@@ -289,7 +322,9 @@
 }
 
 .game-pause-button,
-.game-sound-button {
+.game-sound-button,
+.game-fullscreen-button,
+.game-fullscreen-toggle {
   min-height: 40px;
   border: 1px solid rgba(103, 232, 249, 0.42);
   border-radius: 8px;
@@ -301,13 +336,17 @@
 }
 
 .game-pause-button:hover,
-.game-sound-button:hover {
+.game-sound-button:hover,
+.game-fullscreen-button:hover,
+.game-fullscreen-toggle:hover {
   transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.72);
   filter: brightness(1.08);
 }
 
-.game-pause-button[aria-pressed="true"] {
+.game-pause-button[aria-pressed="true"],
+.game-fullscreen-button[aria-pressed="true"],
+.game-fullscreen-toggle[aria-pressed="true"] {
   border-color: rgba(250, 204, 21, 0.58);
   background: rgba(113, 63, 18, 0.52);
   color: #fde68a;

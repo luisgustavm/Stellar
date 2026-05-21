@@ -196,12 +196,86 @@
 .store-item-visual,
 .inventory-visual {
   position: relative;
+  display: grid;
+  place-items: center;
   overflow: hidden;
   border-radius: 8px;
   background:
     radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.74), transparent 12%),
     linear-gradient(135deg, rgba(6, 182, 212, 0.24), rgba(250, 204, 21, 0.18)),
     repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0 2px, transparent 2px 12px);
+}
+
+.store-item-visual img,
+.inventory-visual img {
+  position: relative;
+  z-index: 2;
+  width: min(72%, 118px);
+  max-height: 86%;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.34));
+}
+
+.store-item-visual.background img,
+.inventory-visual.background img {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  opacity: 0.72;
+  filter: saturate(1.15) contrast(1.05);
+}
+
+.store-item-symbol {
+  position: relative;
+  z-index: 2;
+  width: 74px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, #f8fafc, #67e8f9 32%, #1d4ed8 72%, #020617);
+  box-shadow: 0 0 26px rgba(103, 232, 249, 0.42);
+}
+
+.store-item-visual.item-saturn-frame .store-item-symbol,
+.inventory-visual.item-saturn-frame .store-item-symbol {
+  background: radial-gradient(circle at 38% 32%, #fff7ad, #c084fc 46%, #312e81 100%);
+}
+
+.store-item-visual.item-saturn-frame .store-item-symbol::after,
+.inventory-visual.item-saturn-frame .store-item-symbol::after {
+  content: "";
+  position: absolute;
+  inset: 28% -22%;
+  border: 3px solid rgba(250, 204, 21, 0.8);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.store-item-visual.item-nebula-aura .store-item-symbol,
+.inventory-visual.item-nebula-aura .store-item-symbol {
+  background:
+    radial-gradient(circle at 32% 26%, rgba(248, 250, 252, 0.96), transparent 16%),
+    radial-gradient(circle at 58% 58%, #67e8f9, #a78bfa 46%, #020617 100%);
+}
+
+.store-item-visual.item-meteor-crown .store-item-symbol,
+.inventory-visual.item-meteor-crown .store-item-symbol {
+  clip-path: polygon(50% 4%, 62% 34%, 94% 24%, 74% 54%, 98% 76%, 64% 72%, 50% 98%, 36% 72%, 2% 76%, 26% 54%, 6% 24%, 38% 34%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #facc15, #fb923c, #7f1d1d);
+}
+
+.store-item-visual.item-moon-badge .store-item-symbol,
+.inventory-visual.item-moon-badge .store-item-symbol {
+  background: radial-gradient(circle at 68% 34%, #020617 0 20%, transparent 21%), radial-gradient(circle at 38% 42%, #f8fafc, #94a3b8 65%, #334155);
+}
+
+.store-item-visual.item-rocket-pin .store-item-symbol,
+.inventory-visual.item-rocket-pin .store-item-symbol {
+  border-radius: 18px 18px 50% 50%;
+  background: linear-gradient(180deg, #f8fafc 0 26%, #67e8f9 27% 62%, #f97316 63% 100%);
+  transform: rotate(35deg);
 }
 
 .store-item-visual {
@@ -273,12 +347,33 @@
   background-size: 130% 130%, 120% 120%, 150% 150%, 100% 100%;
 }
 
+.store-item-visual.space-gif-nebula,
+.inventory-visual.space-gif-nebula {
+  background:
+    radial-gradient(circle at 22% 28%, rgba(103, 232, 249, 0.36), transparent 28%),
+    radial-gradient(circle at 72% 34%, rgba(244, 114, 182, 0.32), transparent 30%),
+    radial-gradient(circle at 54% 76%, rgba(167, 139, 250, 0.28), transparent 32%),
+    linear-gradient(140deg, #020617, #312e81);
+}
+
+.store-item-visual.space-gif-venus,
+.inventory-visual.space-gif-venus {
+  background:
+    radial-gradient(circle at 30% 22%, rgba(254, 240, 138, 0.4), transparent 26%),
+    repeating-linear-gradient(160deg, rgba(251, 146, 60, 0.28) 0 14px, rgba(113, 63, 18, 0.2) 14px 28px),
+    linear-gradient(135deg, #431407, #020617);
+}
+
 .store-item-visual.space-gif-blackhole::before,
 .store-item-visual.space-gif-solar::before,
 .store-item-visual.space-gif-deep-space::before,
+.store-item-visual.space-gif-nebula::before,
+.store-item-visual.space-gif-venus::before,
 .inventory-visual.space-gif-blackhole::before,
 .inventory-visual.space-gif-solar::before,
-.inventory-visual.space-gif-deep-space::before {
+.inventory-visual.space-gif-deep-space::before,
+.inventory-visual.space-gif-nebula::before,
+.inventory-visual.space-gif-venus::before {
   content: "";
   position: absolute;
   inset: -30%;
@@ -293,9 +388,13 @@
 .store-item-visual.space-gif-blackhole::after,
 .store-item-visual.space-gif-solar::after,
 .store-item-visual.space-gif-deep-space::after,
+.store-item-visual.space-gif-nebula::after,
+.store-item-visual.space-gif-venus::after,
 .inventory-visual.space-gif-blackhole::after,
 .inventory-visual.space-gif-solar::after,
-.inventory-visual.space-gif-deep-space::after {
+.inventory-visual.space-gif-deep-space::after,
+.inventory-visual.space-gif-nebula::after,
+.inventory-visual.space-gif-venus::after {
   inset: 18%;
   border-color: rgba(255, 255, 255, 0.24);
   animation: store-gif-ring 6s ease-in-out infinite alternate;

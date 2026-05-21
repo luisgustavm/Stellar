@@ -42,9 +42,16 @@ export default function EquippedBackground() {
 
   if (!backgroundItem?.gifClass) return null;
 
+  const backgroundStyle = backgroundItem.image
+    ? { "--equipped-bg-image": `url("${backgroundItem.image}")` }
+    : undefined;
+
   return (
     <div
-      className={`equipped-space-background ${backgroundItem.gifClass}`}
+      className={`equipped-space-background ${backgroundItem.gifClass} ${
+        backgroundItem.image ? "has-image" : ""
+      }`}
+      style={backgroundStyle}
       aria-hidden="true"
     />
   );

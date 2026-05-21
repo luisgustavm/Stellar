@@ -20,18 +20,21 @@ Deploy: https://stellar-steraction.web.app
 - Formulario de feedback com envio para `stellarinteraction@gmail.com` e registro no Firestore.
 - Toasts/mensagens visuais no estilo do site.
 - Deploy configurado com Firebase Hosting.
+- SEO tecnico com `robots.txt`, `sitemap.xml`, `sitemap-public.xml` e arquivo de verificacao do Google Search Console.
 - Regras de seguranca do Firestore em `firestore.rules`.
 
 ## Tecnologias
 
 - React 18
-- Vite
+- Vite 8
 - React Router DOM v6
 - Firebase Auth
 - Firebase Firestore
 - Firebase Hosting
+- Firebase Web SDK 12
 - Three.js
 - Tailwind CSS
+- PostCSS e Autoprefixer
 - CSS modular por pagina
 - FormSubmit para envio de feedback por email
 
@@ -93,6 +96,39 @@ npm run deploy
 ```
 
 Gera a build e publica o site no Firebase Hosting.
+
+## SEO e Google Search Console
+
+Arquivos publicos usados para indexacao e verificacao:
+
+```txt
+public/robots.txt
+public/sitemap.xml
+public/sitemap-public.xml
+public/google97e4445819f8733f.html
+```
+
+URLs publicadas:
+
+```txt
+https://stellar-steraction.web.app/robots.txt
+https://stellar-steraction.web.app/sitemap.xml
+https://stellar-steraction.web.app/sitemap-public.xml
+```
+
+No Google Search Console, use a propriedade de prefixo de URL:
+
+```txt
+https://stellar-steraction.web.app/
+```
+
+E envie o sitemap:
+
+```txt
+sitemap-public.xml
+```
+
+Observacao: as paginas internas do app ficam protegidas por login, entao o Google indexa melhor as rotas publicas, como login, cadastro, termos e privacidade.
 
 ## Firebase
 
@@ -197,9 +233,34 @@ O projeto possui regras de Firestore para limitar acesso aos dados dos usuarios 
 Pontos importantes:
 
 - Nao envie `.env`, logs ou arquivos de build para o GitHub.
+- Nao versione `node_modules`, `dist` ou `.firebase`; esses diretorios sao gerados localmente.
 - Restrinja a chave de API do Firebase pelo dominio do site.
 - Mantenha os dominios autorizados do Firebase Auth revisados.
 - Use Cloud Functions no futuro para validar moedas, compras, recompensas do quiz e pontuacoes do jogo no servidor.
+
+## Qualidade e Publicacao
+
+Ultima verificacao tecnica:
+
+```bash
+npm audit
+npm run build
+npm run deploy
+```
+
+Resultado esperado:
+
+- `npm audit`: sem vulnerabilidades conhecidas.
+- `npm run build`: build de producao gerada com sucesso.
+- `npm run deploy`: publicacao no Firebase Hosting.
+
+Dependencias principais atualizadas:
+
+- `firebase` 12.x
+- `vite` 8.x
+- `@vitejs/plugin-react` 6.x
+
+Tambem foi adicionada a configuracao `postcss.config.js` para processar corretamente Tailwind CSS e Autoprefixer durante a build.
 
 ## Feedback
 
@@ -213,7 +274,9 @@ Tambem tenta salvar uma copia no Firestore. Caso a conexao falhe, o feedback pod
 
 ## Status
 
-Projeto em desenvolvimento, com foco educacional. As principais telas e recursos estao funcionando, e melhorias futuras podem incluir Firebase Storage para upload real de avatar, Cloud Functions para economia segura e mais dados dinamicos de APIs espaciais.
+Projeto em desenvolvimento, com foco educacional. As principais telas e recursos estao funcionando, com deploy ativo no Firebase Hosting, sitemap publico e auditoria de dependencias sem vulnerabilidades conhecidas no momento da ultima verificacao.
+
+Melhorias futuras podem incluir Cloud Functions para economia segura, dominio proprio, home publica otimizada para SEO e mais dados dinamicos de APIs espaciais.
 
 ## Autor
 

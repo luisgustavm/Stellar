@@ -10,6 +10,16 @@ const BULLET_SPEED = 760;
 const BULLET_WIDTH = 22;
 const BULLET_HEIGHT = 5;
 const METEOR_SCORE = 12;
+const INITIAL_GAME_SPEED = 190;
+const SPEED_INCREASE_DELAY_SECONDS = 120;
+const SPEED_INCREASE_PER_SECOND = 2.8;
+const MAX_GAME_SPEED = 360;
+const INITIAL_METEOR_DELAY_MS = 1320;
+const MIN_METEOR_DELAY_MS = 780;
+const METEOR_DELAY_REDUCTION_PER_SECOND = 5;
+const INITIAL_STAR_DELAY_MS = 1080;
+const MIN_STAR_DELAY_MS = 720;
+const STAR_DELAY_REDUCTION_PER_SECOND = 2;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -517,7 +527,7 @@ export default function GameCanvas({
       lives: 3,
       stars: 0,
       score: 0,
-      speed: 230,
+      speed: INITIAL_GAME_SPEED,
       ammo: MAX_AMMO,
       maxAmmo: MAX_AMMO,
       nextReloadAt: null,
@@ -636,8 +646,13 @@ export default function GameCanvas({
 
       const dt = Math.min((now - game.lastFrameAt) / 1000, 0.04);
       const elapsed = getElapsedSeconds(game, now);
+      const difficultySeconds = Math.max(0, elapsed - SPEED_INCREASE_DELAY_SECONDS);
       game.lastFrameAt = now;
-      game.speed = 230 + elapsed * 11;
+      game.speed = clamp(
+        INITIAL_GAME_SPEED + difficultySeconds * SPEED_INCREASE_PER_SECOND,
+        INITIAL_GAME_SPEED,
+        MAX_GAME_SPEED
+      );
       updateAmmo(game, now);
 
       const keys = keysRef.current;
@@ -664,8 +679,14 @@ export default function GameCanvas({
         game.height - PLAYER_HEIGHT - 18
       );
 
-      const meteorDelay = Math.max(430, 1180 - elapsed * 18);
-      const starDelay = Math.max(560, 960 - elapsed * 5);
+      const meteorDelay = Math.max(
+        MIN_METEOR_DELAY_MS,
+        INITIAL_METEOR_DELAY_MS - difficultySeconds * METEOR_DELAY_REDUCTION_PER_SECOND
+      );
+      const starDelay = Math.max(
+        MIN_STAR_DELAY_MS,
+        INITIAL_STAR_DELAY_MS - difficultySeconds * STAR_DELAY_REDUCTION_PER_SECOND
+      );
 
       if (now - game.lastMeteorAt > meteorDelay) {
         game.meteors.push(createMeteor(game.width, game.height));

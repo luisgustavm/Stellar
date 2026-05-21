@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stellar-steraction.web.app/sitemap.xml
+Sitemap: https://stellar-steraction.web.app/sitemap-public.xml

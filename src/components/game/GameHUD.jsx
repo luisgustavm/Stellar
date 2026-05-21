@@ -14,6 +14,8 @@ export default function GameHUD({
   onTogglePause,
   soundEnabled = false,
   onToggleSound,
+  fullscreen = false,
+  onToggleFullscreen,
 }) {
   const ammo = stats.ammo ?? 0;
   const maxAmmo = stats.maxAmmo ?? 6;
@@ -77,6 +79,14 @@ export default function GameHUD({
         aria-pressed={soundEnabled}
       >
         Som {soundEnabled ? "on" : "off"}
+      </button>
+      <button
+        className="game-fullscreen-button"
+        type="button"
+        onClick={onToggleFullscreen}
+        aria-pressed={fullscreen}
+      >
+        {fullscreen ? "Sair tela cheia" : "Tela cheia"}
       </button>
     </aside>
   );

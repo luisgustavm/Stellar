@@ -1,4 +1,5 @@
 import StoreCard from "./StoreCard";
+import { isStoreItemEquipped } from "../../utils/storeEquipment";
 
 export default function StoreGrid({
   items = [],
@@ -12,7 +13,7 @@ export default function StoreGrid({
     <div className="store-grid" aria-live="polite">
       {items.map((item) => {
         const owned = ownedIds.has(item.id);
-        const isEquipped = equipped?.[item.type]?.id === item.id || equipped?.[item.type] === item.id;
+        const isEquipped = isStoreItemEquipped(equipped, item);
 
         return (
           <StoreCard
