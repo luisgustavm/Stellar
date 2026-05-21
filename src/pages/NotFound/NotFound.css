@@ -1,0 +1,36 @@
+.not-found-page {
+  background:
+    radial-gradient(circle at 50% 32%, rgba(248, 113, 113, 0.14), transparent 30%),
+    linear-gradient(150deg, rgba(2, 6, 23, 0.24), rgba(17, 24, 39, 0.74));
+}
+
+.not-found-card {
+  width: min(100%, 520px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.78);
+  padding: clamp(24px, 5vw, 38px);
+  text-align: center;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(18px);
+}
+
+.not-found-card span {
+  display: block;
+  margin-bottom: 10px;
+  color: #f87171;
+  font-size: clamp(3.6rem, 13vw, 7rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.not-found-card h1 {
+  margin: 0 0 12px;
+  font-size: clamp(1.35rem, 4vw, 2.1rem);
+}
+
+.not-found-card p {
+  margin: 0 0 24px;
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 1.7;
+}

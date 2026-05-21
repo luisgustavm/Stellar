@@ -1,0 +1,471 @@
+import { useMemo, useState } from "react";
+import "./Mysteries.css";
+
+const objects = [
+  {
+    id: "nebulosa",
+    name: "Nebulosa de Órion",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/960px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg",
+    tag: "Berçário estelar",
+    distance: "1.344 anos-luz",
+    scale: "24 anos-luz de extensão",
+    highlight: "Uma das regiões de formação estelar mais observadas do céu.",
+    desc: "A Nebulosa de Órion é uma nuvem gigante de gás e poeira onde estrelas jovens estão nascendo e aquecendo o material ao redor.",
+    details:
+      "Ela ajuda astrônomos a entender como sistemas estelares se formam, desde discos protoplanetários até estrelas massivas que alteram todo o ambiente com radiação intensa.",
+    facts: ["Visível a olho nu em céus escuros", "Abriga o aglomerado Trapézio", "Contém discos que podem formar planetas"],
+  },
+  {
+    id: "pilar",
+    name: "Pilares da Criação",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Pillars_of_Creation_%28NIRCam_Image%29.jpg/500px-Pillars_of_Creation_%28NIRCam_Image%29.jpg",
+    tag: "Nuvens moleculares",
+    distance: "6.500 anos-luz",
+    scale: "Cerca de 4 a 5 anos-luz",
+    highlight: "Colunas esculpidas pela radiação de estrelas recém-formadas.",
+    desc: "Os Pilares da Criação fazem parte da Nebulosa da Águia e revelam regiões densas onde gás e poeira ainda resistem à radiação ao redor.",
+    details:
+      "As imagens do Hubble e do James Webb mostram diferentes camadas dessas estruturas, destacando estrelas jovens, jatos e áreas em erosão cósmica.",
+    facts: ["Fotografados pelo Hubble em 1995", "Reobservados pelo James Webb", "São compostos por gás frio e poeira"],
+  },
+  {
+    id: "buraco-negro",
+    name: "Buraco Negro M87",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Black_hole_-_Messier_87_crop_max_res.jpg/960px-Black_hole_-_Messier_87_crop_max_res.jpg",
+    tag: "Horizonte de eventos",
+    distance: "55 milhões de anos-luz",
+    scale: "Bilhões de massas solares",
+    highlight: "Primeiro buraco negro fotografado diretamente pela humanidade.",
+    desc: "O buraco negro no centro da galáxia M87 revelou um anel brilhante de material superaquecido ao redor de uma região escura.",
+    details:
+      "A imagem foi produzida pelo Event Horizon Telescope, uma rede global de radiotelescópios que funciona como um observatório do tamanho da Terra.",
+    facts: ["Imagem divulgada em 2019", "Fica na constelação de Virgem", "Seu jato relativístico atravessa milhares de anos-luz"],
+  },
+  {
+    id: "pulsar",
+    name: "Pulsar",
+    image: "https://cdn.eso.org/images/screen/eso2407a.jpg",
+    tag: "Estrela de nêutrons",
+    distance: "Varia por objeto",
+    scale: "Apenas dezenas de quilômetros",
+    highlight: "Um relógio cósmico formado pelo núcleo ultradenso de uma estrela morta.",
+    desc: "Pulsares giram rapidamente e emitem feixes de radiação que podem ser detectados como pulsos regulares na Terra.",
+    details:
+      "Alguns pulsares são tão precisos que ajudam em estudos de gravidade, matéria extrema e até navegação espacial baseada em sinais celestes.",
+    facts: ["Podem girar centenas de vezes por segundo", "Nascem após supernovas", "Têm campos magnéticos imensos"],
+  },
+  {
+    id: "materia-escura",
+    name: "Matéria Escura",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/1e0657_scale.jpg/960px-1e0657_scale.jpg",
+    tag: "Massa invisível",
+    distance: "Detectada em escala cósmica",
+    scale: "A maior parte da matéria do universo",
+    highlight: "Não emite luz, mas denuncia sua presença pela gravidade.",
+    desc: "A matéria escura é uma das maiores pistas de que existe massa no universo além da matéria comum que forma estrelas, planetas e pessoas.",
+    details:
+      "Observações de galáxias, lentes gravitacionais e aglomerados como o Bullet Cluster indicam que essa massa invisível influencia a estrutura cósmica.",
+    facts: ["Não foi detectada diretamente", "Afeta a rotação de galáxias", "É essencial nos modelos de formação cósmica"],
+  },
+  {
+    id: "andromeda",
+    name: "Galáxia de Andrômeda",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/The_Andromeda_Galaxy.jpg/960px-The_Andromeda_Galaxy.jpg",
+    tag: "Galáxia espiral",
+    distance: "2,5 milhões de anos-luz",
+    scale: "Mais de 1 trilhão de estrelas",
+    highlight: "A grande vizinha da Via Láctea e futuro encontro galáctico.",
+    desc: "Andrômeda é a galáxia espiral grande mais próxima de nós e pode ser vista a olho nu em boas condições de céu.",
+    details:
+      "Ela se aproxima da Via Láctea e, em bilhões de anos, as duas galáxias devem se fundir em uma nova estrutura maior.",
+    facts: ["Também chamada de M31", "Tem galáxias satélites", "É maior que a Via Láctea em número de estrelas"],
+  },
+  {
+    id: "estrela",
+    name: "Estrela Gigante",
+    image: "https://cdn.eso.org/images/screen/eso1103a.jpg",
+    tag: "Evolução estelar",
+    distance: "Varia por estrela",
+    scale: "Dezenas a centenas de vezes o Sol",
+    highlight: "Uma fase dramática da vida de estrelas evoluídas.",
+    desc: "Estrelas gigantes surgem quando uma estrela expande suas camadas externas após consumir grande parte do combustível do núcleo.",
+    details:
+      "Dependendo da massa, essa fase pode anteceder nebulosas planetárias, supernovas, estrelas de nêutrons ou buracos negros.",
+    facts: ["Betelgeuse é um exemplo famoso", "Podem perder massa para o espaço", "Enriquecem o universo com elementos químicos"],
+  },
+  {
+    id: "cmb",
+    name: "Radiação Cósmica de Fundo",
+    image:
+      "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/wmap/ilc_9yr_moll4096.png?w=1280&h=720&fit=clip&crop=faces%2Cfocalpoint",
+    tag: "Eco do Big Bang",
+    distance: "Todo o universo observável",
+    scale: "Luz liberada há cerca de 13,8 bilhões de anos",
+    highlight: "O mapa mais antigo que temos do universo quando ele ainda era jovem e quente.",
+    desc: "A radiação cósmica de fundo é um brilho de micro-ondas que preenche o espaço e registra pequenas diferenças de temperatura do universo primitivo.",
+    details:
+      "Missões como COBE, WMAP e Planck mediram essas variações para estimar idade, composição e geometria do cosmos.",
+    openQuestion: "O que aconteceu nos instantes anteriores à emissão dessa luz ainda depende de modelos como inflação cósmica.",
+    whyMatters: "É uma das principais evidências observacionais do Big Bang e da evolução do universo.",
+    facts: ["Detectada acidentalmente em 1965", "Mapeada com alta precisão pelo WMAP", "Mostra sementes das futuras galáxias"],
+  },
+  {
+    id: "lente-gravitacional",
+    name: "Lente Gravitacional",
+    image:
+      "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2006/05/STScI-01EVVENEYABBCZGZ24C1X6VDH6.jpg?w=1500&h=1500&fit=clip&crop=faces%2Cfocalpoint",
+    tag: "Relatividade em ação",
+    distance: "Bilhões de anos-luz",
+    scale: "Galáxias e aglomerados inteiros",
+    highlight: "A gravidade curva a luz e transforma objetos distantes em arcos, anéis ou múltiplas imagens.",
+    desc: "Quando uma grande massa fica entre nós e uma fonte distante, o espaço-tempo ao redor dela age como uma lente natural.",
+    details:
+      "Esse efeito permite estudar galáxias muito antigas, medir massas invisíveis e mapear matéria escura em aglomerados.",
+    openQuestion: "A distribuição exata da matéria escura em muitos aglomerados ainda precisa ser reconstruída com modelos complexos.",
+    whyMatters: "Funciona como um telescópio cósmico natural, ampliando objetos que seriam fracos demais para observar.",
+    facts: ["Prevista pela relatividade geral", "Pode criar Anéis de Einstein", "Ajuda a medir matéria escura"],
+  },
+  {
+    id: "energia-escura",
+    name: "Energia Escura",
+    image: "https://science.nasa.gov/wp-content/uploads/2023/04/stsci-01evvfya7x23asyxfwh5ejgmt9-jpg.webp",
+    tag: "Expansão acelerada",
+    distance: "Escala cosmológica",
+    scale: "Maior componente de energia do universo",
+    highlight: "A expansão do universo está acelerando, e ainda não sabemos exatamente por quê.",
+    desc: "Energia escura é o nome dado ao fenômeno que parece empurrar o universo para uma expansão cada vez mais rápida.",
+    details:
+      "Supernovas distantes, mapas de galáxias e medições da radiação cósmica de fundo indicam que algo domina a dinâmica em larga escala.",
+    openQuestion: "Ainda não se sabe se é uma propriedade do espaço, um novo campo físico ou sinal de gravidade incompleta.",
+    whyMatters: "Define o destino de longo prazo do universo e testa os limites da física moderna.",
+    facts: ["Associada à expansão acelerada", "Não é matéria escura", "Pode compor cerca de 68% do conteúdo cósmico"],
+  },
+  {
+    id: "kilonova",
+    name: "Kilonova",
+    image:
+      "https://science.nasa.gov/wp-content/uploads/2024/07/hubble-kilonova-ngc4993-1567214820989-heic1717a.jpg",
+    tag: "Colisão de estrelas de nêutrons",
+    distance: "Exemplo famoso: NGC 4993",
+    scale: "Explosão rica em elementos pesados",
+    highlight: "Uma fábrica cósmica de ouro, platina e outros elementos raros.",
+    desc: "Kilonovas surgem quando estrelas de nêutrons colidem, liberando luz, ondas gravitacionais e material extremamente energético.",
+    details:
+      "O evento GW170817 foi observado por detectores de ondas gravitacionais e telescópios, inaugurando uma nova era de astronomia multimensageira.",
+    openQuestion: "Ainda se investiga quanto dos elementos pesados do universo vem dessas colisões.",
+    whyMatters: "Conecta gravidade, luz, nucleossíntese e evolução de galáxias em um único evento.",
+    facts: ["Ligada a ondas gravitacionais", "Pode formar elementos pesados", "GW170817 foi um marco histórico"],
+  },
+  {
+    id: "frb",
+    name: "Rajadas Rápidas de Rádio",
+    image:
+      "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/releases/2021/05/STScI-01F5BSPZ87099CXTSNRC8JVBRP.tif?w=800&h=800&fit=clip&crop=faces%2Cfocalpoint",
+    tag: "Sinais de milissegundos",
+    distance: "Milhões a bilhões de anos-luz",
+    scale: "Energia imensa em frações de segundo",
+    highlight: "Explosões de rádio tão rápidas que somem antes de você piscar.",
+    desc: "FRBs são pulsos intensos de ondas de rádio vindos de fora da Via Láctea, alguns repetitivos e outros aparentemente únicos.",
+    details:
+      "Hipóteses fortes envolvem magnetares, estrelas de nêutrons com campos magnéticos extremos, mas nem todos os casos estão explicados.",
+    openQuestion: "A origem exata de todas as classes de FRBs ainda é um dos grandes desafios da astrofísica moderna.",
+    whyMatters: "Podem servir como sondas para medir matéria entre galáxias e estudar ambientes extremos.",
+    facts: ["Duram milissegundos", "Algumas fontes se repetem", "Hubble ajudou a localizar galáxias hospedeiras"],
+  },
+  {
+    id: "grande-atrator",
+    name: "Grande Atrator",
+    image: "https://science.nasa.gov/wp-content/uploads/2023/04/720334main_potw1302a-jpg.webp",
+    tag: "Anomalia gravitacional",
+    distance: "cerca de 220 milhões de anos-luz",
+    scale: "Superaglomerados e fluxo de galáxias",
+    highlight: "Uma região massiva que influencia o movimento da Via Láctea e de galáxias vizinhas.",
+    desc: "O Grande Atrator é uma concentração de massa associada à região do Aglomerado de Norma, parcialmente escondida pela poeira da Via Láctea.",
+    details:
+      "Como fica na zona de ocultação da nossa galáxia, observações em infravermelho e rádio ajudam a revelar o que a luz visível não mostra.",
+    openQuestion: "A estrutura completa por trás da zona mais obscurecida da Via Láctea ainda é difícil de mapear.",
+    whyMatters: "Ajuda a entender como grandes estruturas puxam galáxias e organizam o universo local.",
+    facts: ["Ligado ao Aglomerado de Norma", "Fica atrás da faixa da Via Láctea", "Influencia fluxos galácticos locais"],
+  },
+  {
+    id: "oumuamua",
+    name: "ʻOumuamua",
+    image:
+      "https://assets.science.nasa.gov/dynamicimage/assets/science/psd/solar/2023/09/e/eso1737b.jpg?w=1280&h=720&fit=clip&crop=faces%2Cfocalpoint",
+    tag: "Visitante interestelar",
+    distance: "Passou pelo Sistema Solar em 2017",
+    scale: "Centenas de metros",
+    highlight: "O primeiro objeto confirmado vindo de outro sistema estelar observado por nós.",
+    desc: "ʻOumuamua atravessou o Sistema Solar em uma trajetória hiperbólica, rápida demais para estar preso à gravidade do Sol.",
+    details:
+      "Sua variação de brilho indicou formato muito alongado ou rotação complexa, e sua aceleração levantou debates sobre composição e atividade.",
+    openQuestion: "Não existe imagem próxima; sua forma real, composição e origem exata continuam abertas.",
+    whyMatters: "Mostra que objetos interestelares podem visitar nosso sistema e podem guardar pistas sobre outros sistemas planetários.",
+    facts: ["Descoberto pelo Pan-STARRS1", "Nome significa mensageiro distante", "Não foi capturado pelo Sol"],
+  },
+];
+
+const allValue = "all";
+
+function getUniqueValues(items, key) {
+  return [...new Set(items.map((item) => item[key]).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
+}
+
+function normalize(value = "") {
+  return value
+    .toString()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+}
+
+function MysteryCard({ mystery, onOpen }) {
+  return (
+    <article className="mystery-card">
+      <div className="mystery-card-media">
+        <img src={mystery.image} alt={mystery.name} loading="lazy" decoding="async" />
+        <span>{mystery.tag}</span>
+      </div>
+
+      <div className="mystery-card-body">
+        <h2>{mystery.name}</h2>
+        <p>{mystery.highlight}</p>
+
+        <dl className="mystery-card-meta">
+          <div>
+            <dt>Distância</dt>
+            <dd>{mystery.distance}</dd>
+          </div>
+          <div>
+            <dt>Escala</dt>
+            <dd>{mystery.scale}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <button type="button" className="mystery-open-button" onClick={onOpen}>
+        Abrir dossiê
+      </button>
+    </article>
+  );
+}
+
+export default function Mysteries() {
+  const [activeMystery, setActiveMystery] = useState(null);
+  const [query, setQuery] = useState("");
+  const [tagFilter, setTagFilter] = useState(allValue);
+  const [scaleFilter, setScaleFilter] = useState(allValue);
+
+  const tags = useMemo(() => getUniqueValues(objects, "tag"), []);
+  const scales = useMemo(() => getUniqueValues(objects, "scale"), []);
+
+  const visibleMysteries = useMemo(() => {
+    const term = normalize(query.trim());
+
+    return objects.filter((mystery) => {
+      const matchesQuery =
+        !term ||
+        [
+          mystery.name,
+          mystery.tag,
+          mystery.distance,
+          mystery.scale,
+          mystery.highlight,
+          mystery.desc,
+          mystery.details,
+          mystery.openQuestion,
+          mystery.whyMatters,
+          ...(mystery.facts || []),
+        ]
+          .filter(Boolean)
+          .some((value) => normalize(value).includes(term));
+
+      const matchesTag = tagFilter === allValue || mystery.tag === tagFilter;
+      const matchesScale = scaleFilter === allValue || mystery.scale === scaleFilter;
+
+      return matchesQuery && matchesTag && matchesScale;
+    });
+  }, [query, scaleFilter, tagFilter]);
+
+  function clearFilters() {
+    setQuery("");
+    setTagFilter(allValue);
+    setScaleFilter(allValue);
+  }
+
+  return (
+    <div className="mysteries-page">
+      <main className="mysteries-main">
+        <header className="mysteries-heading">
+          <p className="page-kicker">Fenômenos profundos</p>
+          <h1>Mistérios Cósmicos</h1>
+          <p>
+            Explore fenômenos que ajudam a explicar nascimento de estrelas,
+            galáxias, matéria invisível e os limites da física conhecida.
+          </p>
+          <div className="mysteries-summary" aria-label="Resumo dos mistérios">
+            <span>{objects.length} temas</span>
+            <span>Imagens científicas</span>
+            <span>Questões em aberto</span>
+          </div>
+        </header>
+
+        <section className="mystery-filters" aria-label="Filtros de mistérios">
+          <form
+            className="mystery-search"
+            onSubmit={(event) => {
+              event.preventDefault();
+            }}
+          >
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar por mistério, fenômeno, galáxia, energia, gravidade ou conceito..."
+              aria-label="Buscar mistérios"
+            />
+            <button type="submit">Buscar</button>
+          </form>
+
+          <div className="mystery-filter-grid">
+            <label>
+              <span>Categoria</span>
+              <select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}>
+                <option value={allValue}>Todas</option>
+                {tags.map((tag) => (
+                  <option value={tag} key={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>Escala</span>
+              <select value={scaleFilter} onChange={(event) => setScaleFilter(event.target.value)}>
+                <option value={allValue}>Todas</option>
+                {scales.map((scale) => (
+                  <option value={scale} key={scale}>
+                    {scale}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button type="button" onClick={clearFilters}>
+              Limpar filtros
+            </button>
+          </div>
+        </section>
+
+        <section className="mysteries-results-heading" aria-label="Resumo dos dossiês">
+          <div>
+            <p className="page-kicker">Arquivo de dossiês</p>
+            <h2>{visibleMysteries.length} mistérios encontrados</h2>
+          </div>
+          <span>{tagFilter === allValue ? "Todas as categorias" : tagFilter}</span>
+        </section>
+
+        {visibleMysteries.length > 0 ? (
+          <section className="mysteries-grid" aria-label="Dossiês de mistérios cósmicos">
+            {visibleMysteries.map((item) => (
+              <MysteryCard
+                key={item.id}
+                mystery={item}
+                onOpen={() => setActiveMystery(item)}
+              />
+            ))}
+          </section>
+        ) : (
+          <p className="mysteries-empty">
+            Nenhum mistério encontrado com esses filtros. Tente limpar a busca ou trocar a categoria.
+          </p>
+        )}
+      </main>
+
+      {activeMystery && (
+        <div className="mystery-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="mystery-modal-title">
+          <section className="mystery-modal-card">
+            <button
+              className="mystery-modal-close"
+              type="button"
+              onClick={() => setActiveMystery(null)}
+              aria-label="Fechar dossiê"
+            >
+              X
+            </button>
+
+            <div className="mystery-modal-media">
+              <img
+                src={activeMystery.image}
+                alt={activeMystery.name}
+                loading="lazy"
+                decoding="async"
+              />
+              <span>{activeMystery.tag}</span>
+            </div>
+
+            <div className="mystery-modal-content">
+              <p className="page-kicker">{activeMystery.tag}</p>
+              <h2 id="mystery-modal-title">{activeMystery.name}</h2>
+              <p className="mystery-highlight">{activeMystery.highlight}</p>
+
+              <dl className="mystery-modal-grid">
+                <div>
+                  <dt>Distância</dt>
+                  <dd>{activeMystery.distance}</dd>
+                </div>
+                <div>
+                  <dt>Escala</dt>
+                  <dd>{activeMystery.scale}</dd>
+                </div>
+                <div>
+                  <dt>Categoria</dt>
+                  <dd>{activeMystery.tag}</dd>
+                </div>
+                <div>
+                  <dt>Status científico</dt>
+                  <dd>Em estudo contínuo</dd>
+                </div>
+              </dl>
+
+              <div className="mystery-text-stack">
+                <p>{activeMystery.desc}</p>
+                <p>{activeMystery.details}</p>
+              </div>
+
+              {(activeMystery.openQuestion || activeMystery.whyMatters) && (
+                <div className="mystery-deep-grid">
+                  {activeMystery.openQuestion && (
+                    <article>
+                      <strong>O que ainda intriga?</strong>
+                      <p>{activeMystery.openQuestion}</p>
+                    </article>
+                  )}
+                  {activeMystery.whyMatters && (
+                    <article>
+                      <strong>Por que importa?</strong>
+                      <p>{activeMystery.whyMatters}</p>
+                    </article>
+                  )}
+                </div>
+              )}
+
+              <ul className="mystery-facts" aria-label="Curiosidades">
+                {activeMystery.facts.map((fact) => (
+                  <li key={fact}>{fact}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}

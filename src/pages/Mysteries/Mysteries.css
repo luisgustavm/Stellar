@@ -1,0 +1,518 @@
+.mysteries-page {
+  position: relative;
+  min-height: 100%;
+  color: white;
+  overflow: visible;
+}
+
+.mysteries-main {
+  position: relative;
+  z-index: 10;
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  padding: 24px 24px 34px;
+}
+
+.mysteries-heading {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mysteries-heading h1 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: clamp(1.85rem, 5vw, 3rem);
+  line-height: 1.1;
+  text-shadow: 0 0 18px rgba(103, 232, 249, 0.34);
+}
+
+.mysteries-heading > p:last-of-type {
+  max-width: 820px;
+  margin: 12px auto 0;
+  color: rgba(226, 232, 240, 0.76);
+  line-height: 1.7;
+}
+
+.mysteries-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.mysteries-summary span,
+.mystery-card-media span,
+.mysteries-results-heading span {
+  border: 1px solid rgba(103, 232, 249, 0.24);
+  border-radius: 999px;
+  background: rgba(8, 47, 73, 0.32);
+  color: #67e8f9;
+  padding: 7px 11px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.mysteries-results-heading,
+.mystery-filters,
+.mysteries-empty,
+.mystery-card,
+.mystery-modal-card {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.72)),
+    rgba(2, 6, 23, 0.7);
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.mystery-filters {
+  width: min(100%, 1180px);
+  display: grid;
+  gap: 12px;
+  margin: 0 auto;
+  padding: 14px;
+}
+
+.mystery-search {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.mystery-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.mystery-filter-grid label {
+  display: grid;
+  gap: 7px;
+}
+
+.mystery-filter-grid span {
+  color: #67e8f9;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.mystery-search input,
+.mystery-filter-grid select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.62);
+  color: white;
+  padding: 12px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color-scheme: dark;
+}
+
+.mystery-search button,
+.mystery-filter-grid button {
+  min-height: 46px;
+  border: 1px solid rgba(103, 232, 249, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.95), rgba(37, 99, 235, 0.9));
+  color: white;
+  padding: 10px 16px;
+  font-weight: 800;
+  transition: transform 180ms ease, border-color 180ms ease, filter 180ms ease;
+}
+
+.mystery-filter-grid button {
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.mystery-search button:hover,
+.mystery-filter-grid button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.72);
+  filter: brightness(1.08);
+}
+
+.mysteries-results-heading {
+  width: min(100%, 1180px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin: 0 auto;
+  padding: 18px;
+}
+
+.mysteries-results-heading h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+}
+
+.mysteries-results-heading span {
+  border-color: rgba(250, 204, 21, 0.26);
+  background: rgba(113, 63, 18, 0.22);
+  color: #fde68a;
+}
+
+.mysteries-empty {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  color: #fde68a;
+  padding: 16px;
+  text-align: center;
+}
+
+.mysteries-grid {
+  width: min(100%, 1260px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 0 auto;
+}
+
+.mystery-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 430px;
+  overflow: hidden;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.mystery-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(103, 232, 249, 0.58);
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(103, 232, 249, 0.18);
+}
+
+.mystery-card-media {
+  position: relative;
+  width: 100%;
+  height: 178px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(2, 6, 23, 0.72);
+}
+
+.mystery-card-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.mystery-card:hover .mystery-card-media img {
+  transform: scale(1.04);
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.mystery-card-media span {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  max-width: calc(100% - 20px);
+  background: rgba(2, 6, 23, 0.78);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.mystery-card-body {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+}
+
+.mystery-card h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.16rem;
+  line-height: 1.18;
+}
+
+.mystery-card p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.82rem;
+  line-height: 1.58;
+}
+
+.mystery-card-meta,
+.mystery-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.mystery-card-meta div,
+.mystery-modal-grid div {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.48);
+  padding: 9px;
+}
+
+.mystery-card-meta dt,
+.mystery-modal-grid dt {
+  color: #67e8f9;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.mystery-card-meta dd,
+.mystery-modal-grid dd {
+  margin: 4px 0 0;
+  color: rgba(248, 250, 252, 0.86);
+  font-size: 0.73rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.mystery-open-button {
+  width: calc(100% - 30px);
+  min-height: 46px;
+  margin: auto 15px 15px;
+  border: 1px solid rgba(103, 232, 249, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.95), rgba(37, 99, 235, 0.9));
+  color: white;
+  padding: 10px 16px;
+  font-weight: 800;
+  transition: transform 180ms ease, border-color 180ms ease, filter 180ms ease;
+}
+
+.mystery-open-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.72);
+  filter: brightness(1.08);
+}
+
+.mystery-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  overflow-y: auto;
+  padding: 58px 18px 18px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.mystery-modal-card {
+  position: relative;
+  width: min(100%, 940px);
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) 1fr;
+  gap: 18px;
+  overflow: visible;
+  padding: 18px;
+}
+
+.mystery-modal-media {
+  position: relative;
+  min-height: 280px;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(103, 232, 249, 0.14), transparent 34%),
+    rgba(15, 23, 42, 0.5);
+}
+
+.mystery-modal-media img {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  display: block;
+  object-fit: cover;
+}
+
+.mystery-modal-media span {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  border: 1px solid rgba(250, 204, 21, 0.34);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fde68a;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.mystery-modal-content {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 11px;
+}
+
+.mystery-modal-content h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  line-height: 1.08;
+}
+
+.mystery-highlight {
+  margin: 0;
+  border-left: 3px solid #facc15;
+  border-radius: 8px;
+  background: rgba(113, 63, 18, 0.2);
+  color: #fde68a;
+  padding: 9px 11px;
+  line-height: 1.52;
+}
+
+.mystery-text-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.mystery-modal-content p,
+.mystery-modal-content li {
+  color: #e2e8f0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.mystery-text-stack p,
+.mystery-deep-grid p {
+  margin: 0;
+}
+
+.mystery-deep-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mystery-deep-grid article {
+  min-width: 0;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.14), transparent 34%),
+    rgba(15, 23, 42, 0.48);
+  padding: 10px;
+}
+
+.mystery-deep-grid strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #fde68a;
+  font-size: 0.78rem;
+}
+
+.mystery-deep-grid p {
+  font-size: 0.84rem;
+}
+
+.mystery-facts {
+  display: grid;
+  gap: 7px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mystery-facts li {
+  border-left: 3px solid #67e8f9;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 8px 10px;
+}
+
+.mystery-modal-close {
+  position: fixed;
+  top: max(28px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 140;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: white;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38);
+}
+
+.mystery-modal-close:hover {
+  filter: brightness(1.12);
+}
+
+@media (max-width: 1120px) {
+  .mysteries-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .mysteries-grid,
+  .mystery-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mystery-modal-card {
+    grid-template-columns: 1fr;
+  }
+
+  .mystery-modal-media {
+    min-height: 220px;
+  }
+
+  .mystery-modal-media img {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 640px) {
+  .mysteries-main {
+    padding: 18px 14px 28px;
+  }
+
+  .mysteries-results-heading,
+  .mysteries-grid,
+  .mystery-search,
+  .mystery-filter-grid,
+  .mystery-card-meta,
+  .mystery-modal-grid,
+  .mystery-deep-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mystery-card {
+    min-height: 0;
+  }
+
+  .mystery-modal-backdrop {
+    padding: 58px 12px 14px;
+  }
+
+  .mystery-modal-card {
+    padding: 12px;
+  }
+
+  .mystery-modal-media,
+  .mystery-modal-media img {
+    min-height: 190px;
+  }
+}
